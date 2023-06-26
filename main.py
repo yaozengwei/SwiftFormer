@@ -170,6 +170,8 @@ def get_args_parser():
                         help='number of distributed processes')
     parser.add_argument('--dist_url', default='env://',
                         help='url used to set up distributed training')
+
+    parser.add_argument('--amp-enable', action='store_true', help='Use amp training')
     return parser
 
 
@@ -362,7 +364,8 @@ def main(args):
             model, criterion, data_loader_train,
             optimizer, device, epoch, loss_scaler,
             args.clip_grad, args.clip_mode, model_ema, mixup_fn,
-            set_training_mode=args.finetune == ''  # keep in eval mode during finetuning
+            set_training_mode=args.finetune == '',  # keep in eval mode during finetuning
+            amp_enable=args.amp_enable,
         )
 
         lr_scheduler.step(epoch)

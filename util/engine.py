@@ -20,7 +20,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: DistillationLoss,
                     clip_grad: float = 0,
                     clip_mode: str = 'norm',
                     model_ema: Optional[ModelEma] = None, mixup_fn: Optional[Mixup] = None,
-                    set_training_mode=True):
+                    set_training_mode=True, amp_enable=False):
     model.train(set_training_mode)
     metric_logger = utils.MetricLogger(delimiter="  ")
     metric_logger.add_meter('lr', utils.SmoothedValue(
@@ -36,7 +36,8 @@ def train_one_epoch(model: torch.nn.Module, criterion: DistillationLoss,
         if mixup_fn is not None:
             samples, targets = mixup_fn(samples, targets)
 
-        if True:  # with torch.cuda.amp.autocast():
+        # if True:  # with torch.cuda.amp.autocast():
+        with torch.cuda.amp.autocast(enabled=amp_enable):
             outputs = model(samples)
             loss = criterion(samples, outputs, targets)
 
@@ -67,7 +68,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: DistillationLoss,
 
 
 @torch.no_grad()
-def evaluate(data_loader, model, device):
+def evaluate(data_loader, model, device, amp_enable=False):
     criterion = torch.nn.CrossEntropyLoss()
 
     metric_logger = utils.MetricLogger(delimiter="  ")
@@ -81,7 +82,7 @@ def evaluate(data_loader, model, device):
         target = target.to(device, non_blocking=True)
 
         # Compute output
-        with torch.cuda.amp.autocast():
+        with torch.cuda.amp.autocast(enabled=amp_enable):
             output = model(images)
             loss = criterion(output, target)
 
