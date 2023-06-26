@@ -171,7 +171,7 @@ class EfficientAdditiveAttnetion(nn.Module):
         query_weight = query @ self.w_g
         A = query_weight * self.scale_factor
 
-        A = A.softmax(dim=-1)
+        A = A.softmax(dim=1)
 
         G = torch.sum(A * query, dim=1)
 
